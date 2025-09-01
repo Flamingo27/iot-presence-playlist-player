@@ -1,1 +1,2 @@
 # iot-presence-playlist-player
+so basically we have given to create a home automation iot based app with open challenge. I dont have arduino or anything but would like to use 4 phones. use one phone for app and other three as sensors. We have laptops to run the server. Basically i building a zonal music system with presence detection with custom playlist for each people. Use mobiles camera and speaker for such and use mqtt and frigate and react native. Build me the app and backend and everything neccessary
