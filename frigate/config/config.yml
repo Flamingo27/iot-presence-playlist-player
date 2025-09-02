@@ -1,0 +1,236 @@
+# Frigate Configuration for IoT Presence Detection
+# IoT Presence Music System
+
+mqtt:
+  host: mosquitto
+  port: 1883
+  topic_prefix: frigate
+  client_id: frigate
+  user: ""
+  password: ""
+  stats_interval: 60
+
+# Camera configurations
+cameras:
+  # Zone 1 Camera (Phone 1)
+  zone1_camera:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.1.101:8554/zone1
+          roles:
+            - detect
+            - record
+      output_args:
+        record: -f segment -segment_time 60 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -c:a copy
+    detect:
+      width: 640
+      height: 480
+      fps: 5
+      enabled: true
+    objects:
+      track:
+        - person
+        - car
+        - dog
+        - cat
+      filters:
+        person:
+          min_area: 5000
+          max_area: 100000
+          threshold: 0.5
+    record:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+    snapshots:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+
+  # Zone 2 Camera (Phone 2)
+  zone2_camera:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.1.102:8554/zone2
+          roles:
+            - detect
+            - record
+      output_args:
+        record: -f segment -segment_time 60 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -c:a copy
+    detect:
+      width: 640
+      height: 480
+      fps: 5
+      enabled: true
+    objects:
+      track:
+        - person
+        - car
+        - dog
+        - cat
+      filters:
+        person:
+          min_area: 5000
+          max_area: 100000
+          threshold: 0.5
+    record:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+    snapshots:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+
+  # Zone 3 Camera (Phone 3)
+  zone3_camera:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.1.103:8554/zone3
+          roles:
+            - detect
+            - record
+      output_args:
+        record: -f segment -segment_time 60 -segment_format mp4 -reset_timestamps 1 -strftime 1 -c:v copy -c:a copy
+    detect:
+      width: 640
+      height: 480
+      fps: 5
+      enabled: true
+    objects:
+      track:
+        - person
+        - car
+        - dog
+        - cat
+      filters:
+        person:
+          min_area: 5000
+          max_area: 100000
+          threshold: 0.5
+    record:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+    snapshots:
+      enabled: true
+      retain:
+        days: 7
+        mode: motion
+
+# Detection model configuration
+detectors:
+  cpu:
+    type: cpu
+    num_threads: 2
+
+# Object detection models
+model:
+  path: /config/model.tflite
+  width: 320
+  height: 320
+  input_tensor: normalized_input_image_tensor
+  input_pixel_format: rgb
+  input_pixel_range: "0-1"
+  labelmap_path: /config/labelmap.txt
+
+# Motion detection
+motion:
+  threshold: 25
+  contour_area: 500
+  delta_alpha: 0.2
+  frame_alpha: 0.9
+  frame_height: 180
+  frame_width: 320
+  gap: 30
+  max_seconds: 30
+
+# Recording configuration
+record:
+  enabled: true
+  retain:
+    days: 7
+    mode: motion
+  events:
+    retain:
+      default: 7
+      mode: motion
+
+# Snapshots configuration
+snapshots:
+  enabled: true
+  retain:
+    default: 7
+    mode: motion
+  timestamp: true
+  bounding_box: true
+  crop: false
+  height: 175
+  required_zones: []
+
+# Birdseye configuration
+birdseye:
+  enabled: true
+  width: 1280
+  height: 720
+  quality: 8
+  mode: objects
+
+# Zones configuration
+zones:
+  zone1_entrance:
+    cameras:
+      - zone1_camera
+    coordinates: 0,0,640,0,640,480,0,480
+    objects:
+      - person
+    filters:
+      person:
+        min_area: 5000
+        max_area: 100000
+        threshold: 0.5
+
+  zone2_living:
+    cameras:
+      - zone2_camera
+    coordinates: 0,0,640,0,640,480,0,480
+    objects:
+      - person
+    filters:
+      person:
+        min_area: 5000
+        max_area: 100000
+        threshold: 0.5
+
+  zone3_bedroom:
+    cameras:
+      - zone3_camera
+    coordinates: 0,0,640,0,640,480,0,480
+    objects:
+      - person
+    filters:
+      person:
+        min_area: 5000
+        max_area: 100000
+        threshold: 0.5
+
+# API configuration
+api:
+  enabled: true
+  port: 5000
+  cors:
+    enabled: true
+    allowed_origins:
+      - "*"
+
+# Web interface
+web:
+  enabled: true
+  port: 5000
+  theme: dark
+

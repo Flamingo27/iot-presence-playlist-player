@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - iot-network
+
+  # Frigate for object detection
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    container_name: frigate
+    privileged: true
+    ports:
+      - "5000:5000"
+      - "1935:1935"
+    volumes:
+      - ./frigate/config:/config
+      - /dev/bus/usb:/dev/bus/usb
+      - /tmp/cache:/tmp/cache
+    environment:
+      - FRIGATE_RTSP_PASSWORD=password
+    networks:
+      - iot-network
+
+  # Backend API Server
+  backend:
+    build: ./backend
+    container_name: backend-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - MQTT_BROKER_URL=mqtt://mosquitto:1883
+      - FRIGATE_URL=http://frigate:5000
+    depends_on:
+      - mosquitto
+      - frigate
+    networks:
+      - iot-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+networks:
+  iot-network:
+    driver: bridge
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+
